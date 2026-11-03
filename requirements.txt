@@ -1,0 +1,4 @@
+dagster==1.13.28
+dagster-webserver==1.13.28
+pyspark==4.3.0
+requests==2.34.2
