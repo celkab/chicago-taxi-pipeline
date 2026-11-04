@@ -21,7 +21,7 @@ docker compose up --build
 - **Période choisie : du 2023-01-01 au 2023-01-08 (exclu), soit 7 jours.** Elle se change sans toucher au code :
   `START_DATE=2023-01-01 END_DATE=2023-04-01 docker compose up --build` (un trimestre).
 - **Volume obtenu** : le nombre de lignes de chaque jour est loggé par l'asset `bronze_trips` (onglet Runs de Dagster)
-  et le total silver/rejeté par `silver_trips`. *(À reporter ici après le premier run : ___ lignes.)*
+  et le total silver/rejeté par `silver_trips`. *(À reporter ici après le premier run :7 jours, 83 667 lignes brutes, 81 952 conservées après nettoyage (1 715 rejetées, 0 doublon))*
 - **Téléchargement** (fait par l'asset `bronze_trips`) : une requête par jour, paginée par tranches de 100 000 lignes. Équivalent `curl` pour une page :
 
 ```bash
