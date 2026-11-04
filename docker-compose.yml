@@ -1,0 +1,23 @@
+x-common: &common
+  build: .
+  image: chicago-pipeline
+  environment:
+    DATA_DIR: /app/data
+    START_DATE: ${START_DATE:-2023-01-01}
+    END_DATE: ${END_DATE:-2023-01-08}
+    SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-2g}
+  volumes:
+    - ./data:/app/data
+
+services:
+  # Interface Dagster : http://localhost:3000 (Assets > Materialize all pour relancer à la main)
+  pipeline:
+    <<: *common
+    ports:
+      - '3000:3000'
+
+  # Lance le pipeline complet sans cliquer, puis s'arrête
+  pipeline-run:
+    <<: *common
+    command: ["dagster", "asset", "materialize", "--select", "*", "-m", "pipeline.definitions"]
+    restart: "no"
