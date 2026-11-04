@@ -46,15 +46,15 @@ API SODA (CSV) ──► BRONZE ──────────► SILVER ──�
 ```
 
 Assets Dagster : `bronze_trips → silver_trips → gold_revenue_per_day | gold_avg_duration_per_day | gold_top_pickup_zones`.
-Tous les chemins sont dans `pipeline/config.py` : passer plus tard à MinIO (`s3a://…`) ne demande de changer que ce fichier.
+Tous les chemins sont dans `pipeline/config.py`.
 
 ## 4. Choix techniques
 
 - **Dagster** : le modèle « asset » correspond directement aux couches du médaillon, avec lineage visible dans l'UI.
 - **Spark en mode local** : suffisant pour ce volume, aucun cluster à gérer.
-- **Silver : lecture en string puis cast explicite** : on contrôle le typage nous-mêmes. Spark 4 active ANSI par défaut, ce qui ferait
-  planter le job sur une valeur illisible ; on le désactive (`spark.sql.ansi.enabled=false`) pour obtenir un `NULL`, que les règles de qualité rejettent proprement.
-- **Déduplication sur `trip_id`** : c'est l'identifiant unique d'une course ; un même trajet rechargé deux fois ne doit compter qu'une fois dans le CA.
+- **Silver : lecture en string puis cast explicite** : on contrôle le typage. Spark 4 active ANSI par défaut, ce qui ferait
+  planter le job sur une valeur illisible , on le désactive (`spark.sql.ansi.enabled=false`) pour obtenir un `NULL`, que les règles de qualité rejettent proprement.
+- **Déduplication sur `trip_id`** : c'est l'identifiant unique d'une course , un même trajet rechargé deux fois ne doit compter qu'une fois dans le CA.
 - **Parquet partitionné par `trip_date`** : format colonnaire typé et compressé, et les agrégats « par jour » ne lisent que les partitions utiles.
 - **Quarantaine plutôt que suppression** : les lignes invalides ne sont pas perdues, elles sont écrites dans `data/rejected/` avec la colonne `reject_reasons`,
   et le nombre de rejets par règle est loggé.
@@ -79,7 +79,7 @@ Les courses sans zone de prise en charge sont conservées (elles comptent dans l
 
 ## 5. Ce que je ferais avec plus de temps
 
-- **Stockage objet** : MinIO / S3 (`s3a://`) comme socle du datalake, avec le JAR `hadoop-aws` ; ici le datalake est un volume local.
+- **Stockage objet** : MinIO / S3 (`s3a://`) comme socle du datalake, avec le JAR `hadoop-aws` .Ici le datalake est un volume local.
 - **Qualité plus poussée** : seuils sur les valeurs aberrantes (durée max, distance max, total max), montants négatifs sur `fare/tips/tolls/extras`,
   rapport qualité persisté, contrôles Dagster (*asset checks*) avec seuil d'alerte sur le taux de rejet, réconciliation gold/silver.
 - **Ingestion** : téléchargement parallèle, écriture atomique des fichiers, partitions journalières Dagster pour ne retraiter que les jours modifiés.
